@@ -6,7 +6,7 @@
 
 # gsplat-talkinghead
 
-Zero-Infrastructure Lip-Synced Gaussian-Splat avatar components for AI voice agents. Drop it into any React app, pick a provider, and hand it your credentials — everything else is handled internally. **No infrastructure provisioning — Gaussian-splat rendering and wav2arkit neural lipsync both run directly in the browser.**
+Lip-Synced Gaussian-Splat avatar components for AI voice agents. Drop it into any React app, pick a provider, and hand it your credentials — everything else is handled internally. **No infrastructure provisioning — Gaussian-splat rendering and wav2arkit neural lipsync both run directly in the browser.**
 
 Supported providers: **OpenAI Realtime API**, **ElevenLabs Conversational AI Agents**, **Vapi Agents**, **LiveKit Agents**.
 
@@ -648,7 +648,7 @@ If you use gsplat-talkinghead in academic work, a research demo, or a published 
 ```bibtex
 @software{peiris2026gsplattalkinghead,
   author  = {Peiris, Navod},
-  title   = {gsplat-talkinghead: Zero-Infrastructure Lip-Synced Gaussian-Splat avatar components for AI voice agents},
+  title   = {gsplat-talkinghead: LAM Gaussian-Splat Avatars for AI voice agents},
   year    = {2026},
   url     = {https://github.com/NavodPeiris/gsplat-talkinghead},
   note    = {npm: gsplat-talkinghead}
@@ -657,7 +657,7 @@ If you use gsplat-talkinghead in academic work, a research demo, or a published 
 
 **Plain text**
 
-> Navod Peiris. _gsplat-talkinghead: Zero-Infrastructure Lip-Synced Gaussian-Splat avatar components for AI voice agents._ 2026. https://github.com/NavodPeiris/gsplat-talkinghead
+> Navod Peiris. _gsplat-talkinghead: LAM Gaussian-Splat Avatars for AI voice agents._ 2026. https://github.com/NavodPeiris/gsplat-talkinghead
 
 **Acknowledgement (for README or paper footnote)**
 
