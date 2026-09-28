@@ -8,7 +8,7 @@
 
 Lip-Synced Gaussian-Splat avatar components for AI voice agents. Drop it into any React app, pick a provider, and hand it your credentials — everything else is handled internally. **No infrastructure provisioning — Gaussian-splat rendering and wav2arkit neural lipsync both run directly in the browser.**
 
-Supported providers: **OpenAI Realtime API**, **ElevenLabs Conversational AI Agents**, **Vapi Agents**, **LiveKit Agents**.
+Supported providers: **OpenAI Realtime API**, **ElevenLabs Conversational AI Agents**, **Vapi Agents**, **LiveKit Agents**. **Qwen Realtime (Alibaba Cloud)**
 
 </div>
 
@@ -36,6 +36,51 @@ Optional depending on your provider usecase:
 ```bash
 npm install gsplat-talkinghead
 ```
+
+---
+
+## Environment setup
+
+Provider **secret keys belong on your backend**, never in browser code. Each
+component asks for credentials through a callback (`getEphemeralKey`,
+`getConversationToken`, `getToken`, `createSession`): implement it by calling
+your own backend route, which uses the secret to mint a short-lived token (or
+forward a WebRTC offer) and returns only that to the browser.
+
+| Provider                                      | Backend env (secret)                          | Browser env (public) | What your backend serves                                                                 |
+| --------------------------------------------- | --------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------- |
+| [OpenAI Realtime](#openai)                    | `OPENAI_API_KEY`                              | —                    | `getEphemeralKey` → ephemeral key from `POST /v1/realtime/client_secrets`                |
+| [OpenAI GPT-Live](#openai-gpt-live)           | `OPENAI_API_KEY`                              | —                    | `createSession` → SDP answer from `POST /v1/live/sessions`                               |
+| [Qwen realtime](#qwen-realtime-alibaba-cloud) | `DASHSCOPE_API_KEY`, `DASHSCOPE_WORKSPACE_ID` | —                    | `createSession` → SDP answer from Model Studio's WebRTC endpoint                         |
+| [ElevenLabs](#elevenlabs)                     | `ELEVENLABS_API_KEY`                          | agent ID             | `getConversationToken` → conversation token for your agent                               |
+| [Vapi](#vapi)                                 | —                                             | `VAPI_PUBLIC_KEY`    | Nothing — the public key is browser-safe; restrict allowed domains in the Vapi dashboard |
+| [LiveKit](#livekit)                           | `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`       | `LIVEKIT_URL`        | `getToken` → room access token                                                           |
+
+Example files (only include the providers you use):
+
+```bash
+# backend/.env — server only, never shipped to the browser
+OPENAI_API_KEY=sk-...
+DASHSCOPE_API_KEY=sk-...
+DASHSCOPE_WORKSPACE_ID=ws-...
+ELEVENLABS_API_KEY=...
+LIVEKIT_API_KEY=API...
+LIVEKIT_API_SECRET=...
+```
+
+```bash
+# frontend/.env — public values only (use your bundler's prefix:
+# VITE_ for Vite, NEXT_PUBLIC_ for Next.js, REACT_APP_ for Create React App)
+VITE_VAPI_PUBLIC_KEY=...
+VITE_LIVEKIT_URL=wss://<project>.livekit.cloud
+```
+
+Anything with a bundler prefix is embedded in your JavaScript bundle and
+visible to users, so never give a secret key one of those prefixes.
+
+To try the providers locally without a backend, see the
+[`test-env` playground](test-env/README.md), which reads keys from its own
+`.env` (for local testing only).
 
 ---
 

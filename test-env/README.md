@@ -1,4 +1,65 @@
-# Getting Started with Create React App
+# test-env
+
+Local playground for `gsplat-talkinghead`. It imports the package straight from
+`../gsplat-talkinghead/src` (see `craco.config.js`), so edits to the package
+hot-reload here without rebuilding.
+
+## Environment setup
+
+1. Copy the sample file and fill in the keys for the providers you want to try:
+
+   ```bash
+   cp .env.sample .env
+   ```
+
+2. Restart the dev server (`pnpm start`) after any change to `.env` — Create
+   React App only reads it at startup.
+
+You only need the variables for the examples you run. `.env` is gitignored;
+never commit real keys.
+
+| Variable | Used by | Where to get it |
+| --- | --- | --- |
+| `REACT_APP_OPENAI_API_KEY` | `OpenAIRealtimeTest`, `OpenAILiveTest` | [OpenAI API keys](https://platform.openai.com/api-keys) |
+| `REACT_APP_ELEVENLABS_API_KEY` | `ElevenLabsAvatarTest` | [ElevenLabs API keys](https://elevenlabs.io/app/settings/api-keys) |
+| `REACT_APP_VAPI_PUBLIC_KEY` | `VapiAvatarTest` | Vapi dashboard → API Keys (the **public** key) |
+| `REACT_APP_LIVEKIT_URL` | `LiveKitAvatarTest` | LiveKit Cloud project → Settings (`wss://<project>.livekit.cloud`) |
+| `REACT_APP_LIVEKIT_API_KEY` | `LiveKitAvatarTest` | LiveKit Cloud project → Settings → API keys |
+| `REACT_APP_LIVEKIT_API_SECRET` | `LiveKitAvatarTest` | Same place as the API key |
+| `REACT_APP_LIVEKIT_AGENT_NAME` | `LiveKitAvatarTest` (optional) | Your agent's name — only needed for explicit agent dispatch |
+| `DASHSCOPE_API_KEY` | `QwenRealtimeTest` | [Model Studio](https://modelstudio.console.alibabacloud.com) (Singapore region) → API Key |
+| `DASHSCOPE_WORKSPACE_ID` | `QwenRealtimeTest` | Model Studio → your workspace's details page (`ws-…`) |
+
+Some examples also have provider IDs set directly in the component — change
+these to your own:
+
+| Example | Hard-coded value |
+| --- | --- |
+| `ElevenLabsAvatarTest.tsx` | `agentId` (your ElevenLabs agent) |
+| `VapiAvatarTest.tsx` | `assistantId` (your Vapi assistant) |
+
+### Notes
+
+- **`REACT_APP_*` variables are bundled into the browser JavaScript.** That's
+  fine for local testing only — in a real app, keep secrets (OpenAI,
+  ElevenLabs, LiveKit secret) on a backend and have it mint the short-lived
+  tokens the components ask for.
+- **Qwen keys never reach the browser.** Model Studio blocks browser requests,
+  so the dev server proxies `/qwen-session` to it and adds the key server-side
+  (see `craco.config.js`). Name these two without the `REACT_APP_` prefix so
+  they're never bundled; the older `REACT_APP_DASHSCOPE_*` names still work.
+- Qwen API keys and workspaces are per region. The example uses the Singapore
+  endpoint (`ap-southeast-1`), so create both there.
+
+## Choosing an example
+
+`src/App.tsx` renders one example at a time — swap the component inside
+`<App>` (e.g. `<QwenRealtimeTest />`) to switch provider.
+
+---
+
+## Create React App scripts
+
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
