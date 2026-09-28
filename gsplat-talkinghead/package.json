@@ -1,0 +1,133 @@
+{
+  "name": "gsplat-talkinghead",
+  "version": "0.1.0",
+  "description": "Zero-Infrastructure Lip-Synced Gaussian-Splat avatar components for AI voice agents. Built with onnxruntime-web and AI providers.",
+  
+  "author": "Navod Peiris",
+  "license": "MIT",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NavodPeiris/gsplat-talkinghead.git"
+  },
+  "homepage": "https://github.com/NavodPeiris/gsplat-talkinghead#readme",
+  "bugs": {
+    "url": "https://github.com/NavodPeiris/gsplat-talkinghead/issues"
+  },
+
+  "type": "module",
+
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./openai": {
+      "types": "./dist/openai.d.ts",
+      "import": "./dist/openai.mjs",
+      "require": "./dist/openai.cjs"
+    },
+    "./vapi": {
+      "types": "./dist/vapi.d.ts",
+      "import": "./dist/vapi.mjs",
+      "require": "./dist/vapi.cjs"
+    },
+    "./elevenlabs": {
+      "types": "./dist/elevenlabs.d.ts",
+      "import": "./dist/elevenlabs.mjs",
+      "require": "./dist/elevenlabs.cjs"
+    },
+    "./livekit": {
+      "types": "./dist/livekit.d.ts",
+      "import": "./dist/livekit.mjs",
+      "require": "./dist/livekit.cjs"
+    },
+    "./qwen": {
+      "types": "./dist/qwen.d.ts",
+      "import": "./dist/qwen.mjs",
+      "require": "./dist/qwen.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+
+  "files": [
+    "dist",
+    "assets"
+  ],
+
+  "sideEffects": [
+    "*.css"
+  ],
+
+  "keywords": [
+    "gsplat",
+    "gaussian-splatting",
+    "gaussian-avatar",
+    "talking-head",
+    "talkinghead",
+    "talking-avatar",
+    "3d-avatar",
+    "ai-avatar",
+    "voice-agent",
+    "voice-ai",
+    "realtime-avatar",
+    "realtime-voice",
+    "lipsync",
+    "viseme",
+    "react",
+    "threejs",
+    "react-three-fiber",
+    "lam"
+  ],
+
+  "engines": {
+    "node": ">=18"
+  },
+
+  "scripts": {
+    "build": "tsup && tailwindcss -i src/styles.css -o dist/styles.css --minify",
+    "prepack": "node -e \"require('fs').copyFileSync('../README.md', 'README.md')\"",
+    "prepublishOnly": "npm run build"
+  },
+
+  "peerDependencies": {
+    "@myned-ai/gsplat-flame-avatar-renderer": ">=1.4.0",
+    "react": ">=18",
+    "react-dom": ">=18",
+    "@elevenlabs/react": "^1.0.2",
+    "@vapi-ai/web": "^2.5.2",
+    "livekit-client": "2.16.1"
+  },
+
+  "peerDependenciesMeta": {
+    "@elevenlabs/react": { "optional": true },
+    "@vapi-ai/web": { "optional": true },
+    "livekit-client": { "optional": true }
+  },
+
+  "dependencies": {
+    "onnxruntime-web": "^1.29.0",
+    "uuid": "^9.0.0"
+  },
+
+  "devDependencies": {
+    "@myned-ai/gsplat-flame-avatar-renderer": "^1.4.0",
+    "@types/react": "^19.0.0",
+    "@types/uuid": "^9.0.0",
+    "tailwindcss": "^3.0.0",
+    "tsup": "^8",
+    "typescript": "^5.0.0",
+    "@elevenlabs/react": "^1.0.2",
+    "@vapi-ai/web": "^2.5.2",
+    "livekit-client": "2.16.1"
+  },
+
+  "overrides": {
+    "livekit-client": "2.16.1"
+  }
+}

@@ -1,0 +1,11 @@
+dist
+build
+node_modules
+.env
+models
+.claude
+prod-env
+interactive-website-navigator
+cloudflare_plan
+# Generated from the root README by the package's prepack script
+gsplat-talkinghead/README.md
