@@ -490,9 +490,9 @@ All provider components accept these additional props:
 The library ships with four preset avatars — **Jack**, **Jane**, **John** and
 **Sasha** — picked with the `avatar` prop. **Jane** is used when
 you pass neither `avatar` nor `assetsPath`. Nothing to configure, nothing to
-host: the bundles live inside the npm package (`assets/<name>.zip`) and are
-served via [jsDelivr's npm CDN](https://www.jsdelivr.com/), which mirrors
-every published package's contents automatically.
+host: the bundles are served from this project's GitHub repo (`main` branch)
+via [jsDelivr's GitHub CDN](https://www.jsdelivr.com/). They aren't included in
+the npm package, which keeps the install small.
 
 ```tsx
 // Default preset (Jane)
@@ -510,10 +510,9 @@ import { AVATAR_PRESETS, type AvatarPreset } from "gsplat-talkinghead";
 AVATAR_PRESETS; // ["Jack", "Jane", "John", "Sasha"]
 ```
 
-To serve the presets from your own origin instead of jsDelivr (strict CSP,
-offline, or local development before a version is published), copy the
-package's `assets/` folder somewhere public and point the library at it once
-at startup:
+To serve the presets from your own origin instead of jsDelivr (strict CSP or
+offline use), copy the repo's `gsplat-talkinghead/assets/` folder somewhere
+public and point the library at it once at startup:
 
 ```ts
 import { configureAvatarPresets } from "gsplat-talkinghead";

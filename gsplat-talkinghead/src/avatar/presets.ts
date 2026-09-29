@@ -1,12 +1,3 @@
-// Substituted at build time by tsup (see tsup.config.ts's `define`) with
-// the published package version. Read via a `globalThis` property access
-// (rather than a bare identifier) so no ambient type declaration is
-// needed — this file also gets compiled as-is by consumers that alias
-// straight to source (e.g. a dev harness), where the substitution never
-// runs and this safely evaluates to `undefined` at runtime.
-const injectedVersion = (globalThis as Record<string, unknown>).__GSPLAT_TALKINGHEAD_VERSION__;
-const VERSION = typeof injectedVersion === 'string' ? injectedVersion : 'latest';
-
 /** Names of the built-in avatars, usable as the `avatar` prop. */
 export const AVATAR_PRESETS = ['Jack', 'Jane', 'John', 'Sasha'] as const;
 
@@ -16,10 +7,14 @@ export type AvatarPreset = (typeof AVATAR_PRESETS)[number];
 /** Avatar used when neither `avatar` nor `assetsPath` is given. */
 export const DEFAULT_AVATAR_PRESET: AvatarPreset = 'Jane';
 
-// Preset bundles ship inside the npm package (`assets/<name>.zip`) and are
-// served via jsDelivr's npm CDN, which mirrors every published package's
-// contents automatically — no separate hosting needed.
-const CDN_BASE_URL = `https://cdn.jsdelivr.net/npm/gsplat-talkinghead@${VERSION}/assets`;
+// Preset bundles are NOT shipped in the npm package (they're ~16 MB). They
+// live in the GitHub repo's `main` branch and are served by jsDelivr's GitHub
+// CDN. Every installed version loads the current bundles on `main`, and
+// jsDelivr caches branch files (~12 h), so updated zips take a while to
+// propagate unless the cache is purged (https://www.jsdelivr.com/tools/purge).
+const GITHUB_REPO = 'NavodPeiris/gsplat-talkinghead';
+const ASSETS_DIR = 'gsplat-talkinghead/assets';
+const CDN_BASE_URL = `https://cdn.jsdelivr.net/gh/${GITHUB_REPO}@main/${ASSETS_DIR}`;
 
 // Override lives on globalThis, not in module scope: the CJS build doesn't
 // share chunks between entry points, so `gsplat-talkinghead` and e.g.
@@ -29,8 +24,8 @@ const store = globalThis as Record<string, unknown>;
 
 /**
  * Changes where preset bundles are fetched from — e.g. to self-host the
- * package's `assets/` folder (strict CSP, offline, or a local dev server
- * before a version is published to npm). Call once at startup.
+ * repo's `gsplat-talkinghead/assets/` folder (strict CSP, offline, or a local
+ * dev server). Call once at startup.
  */
 export function configureAvatarPresets({ baseUrl }: { baseUrl: string }): void {
   store[BASE_URL_KEY] = baseUrl.replace(/\/+$/, '');

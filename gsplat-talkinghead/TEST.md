@@ -28,11 +28,11 @@ Expected output: silence (no errors). Any `error TS…` line needs to be fixed b
 
 Common things to check when errors appear:
 
-| Error pattern                                                  | Likely cause                                                                       |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `Cannot find module '@myned-ai/gsplat-flame-avatar-renderer'`  | Run `pnpm install` first — the host app must supply this peer dependency          |
-| `Cannot find module 'onnxruntime-web'`                         | Run `pnpm install` first — it's a regular dependency, not a peer                  |
-| `Type … is not assignable to type 'tool'`                      | Wrong import — use `tool` from `@openai/agents/realtime`, not from `@openai/agents` |
+| Error pattern                                                 | Likely cause                                                                        |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `Cannot find module '@myned-ai/gsplat-flame-avatar-renderer'` | Run `pnpm install` first — the host app must supply this peer dependency            |
+| `Cannot find module 'onnxruntime-web'`                        | Run `pnpm install` first — it's a regular dependency, not a peer                    |
+| `Type … is not assignable to type 'tool'`                     | Wrong import — use `tool` from `@openai/agents/realtime`, not from `@openai/agents` |
 
 ---
 
@@ -57,46 +57,47 @@ pnpm start
 
 ### What to verify
 
-| Check                                                     | Expected |
-| ----------------------------------------------------------- | -------- |
-| Page loads without console errors                         | ✓        |
-| Spinner shows while the avatar bundle + ONNX model download | ✓        |
-| Avatar appears after loading finishes                      | ✓        |
+| Check                                                                              | Expected |
+| ---------------------------------------------------------------------------------- | -------- |
+| Page loads without console errors                                                  | ✓        |
+| Spinner shows while the avatar bundle + ONNX model download                        | ✓        |
+| Avatar appears after loading finishes                                              | ✓        |
 | Reloading the page loads the ONNX model from cache (faster, check the Network tab) | ✓        |
-| **Start** button is visible                                | ✓        |
-| Clicking **Start** prompts mic permission                   | ✓        |
-| Avatar mouth moves when agent speaks                       | ✓        |
-| Clicking **End** disconnects cleanly                       | ✓        |
-| `onSessionEnd` fires on phrase / timeout                    | ✓        |
-| No errors in Network tab (WebRTC connected)                | ✓        |
+| **Start** button is visible                                                        | ✓        |
+| Clicking **Start** prompts mic permission                                          | ✓        |
+| Avatar mouth moves when agent speaks                                               | ✓        |
+| Clicking **End** disconnects cleanly                                               | ✓        |
+| `onSessionEnd` fires on phrase / timeout                                           | ✓        |
+| No errors in Network tab (WebRTC connected)                                        | ✓        |
 
 ### Mobile verification
 
 Open Chrome DevTools → Toggle Device Toolbar → choose a phone preset, then reload. Additional checks:
 
-| Check                                          | Expected |
-| ------------------------------------------------- | -------- |
-| Avatar renders without WebGL errors on mobile GPU tier | ✓        |
+| Check                                                                   | Expected |
+| ----------------------------------------------------------------------- | -------- |
+| Avatar renders without WebGL errors on mobile GPU tier                  | ✓        |
 | Lipsync still keeps up in near-real-time on mobile CPU (WASM inference) | ✓        |
 
 ---
 
 ## 4. Tuning mouth animation
 
-The wav2arkit model's raw output is *real* — it does react to speech — but its natural amplitude is far too subtle to read as visible movement on most avatar rigs, and its per-chunk predictions have no smoothing across chunk boundaries (the reference LAM_Audio2Expression pipeline's own Savitzky-Golay smoothing step wasn't ported). Because of that, "does the mouth look right" is a tuning problem you'll likely want to revisit per avatar rig, not a one-time fix. All the relevant knobs live in **`src/constants/arkit.ts`**, with a corresponding change log in the doc comment above each one — read those comments for the specific evidence that led to the current values before changing them blind.
+The wav2arkit model's raw output is _real_ — it does react to speech — but its natural amplitude is far too subtle to read as visible movement on most avatar rigs, and its per-chunk predictions have no smoothing across chunk boundaries (the reference LAM_Audio2Expression pipeline's own Savitzky-Golay smoothing step wasn't ported). Because of that, "does the mouth look right" is a tuning problem you'll likely want to revisit per avatar rig, not a one-time fix. All the relevant knobs live in **`src/constants/arkit.ts`**, with a corresponding change log in the doc comment above each one — read those comments for the specific evidence that led to the current values before changing them blind.
 
 Symptom → which knob to change:
 
-| Symptom                                                        | Knob                                                                 | How to adjust |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------- | -------------- |
-| Mouth barely moves / looks neutral even when the agent is clearly speaking | `MOUTH_GAIN`                                                        | Raise it (was too low at 3, workable at 10). Small-signal response scales roughly linearly with this. |
-| Mouth opens too wide / looks exaggerated, "screaming", or unnatural | `MOUTH_MAX`                                                          | Lower it (0.4 as of this writing). This is a soft ceiling the curve approaches, not a hard clamp — see the curve formula in the code comment. |
-| A *specific* mouth shape looks wrong (blurry, distorted, combines badly with others) at high values | `MOUTH_SHAPE_CEILING_MULTIPLIER`                                     | Add/adjust an entry for that blendshape name to scale its ceiling down (e.g. `0.6` = 60% of `MOUTH_MAX`) relative to the others, instead of lowering everything. `mouthLowerDownLeft/Right` already has one — a Gaussian-splat rendering artifact (soft lip tissue blurs when deformed far from its rest pose, more than the jaw's rigid rotation does). |
-| Odd combined shapes (e.g. lips pursing into an "O" while the jaw opens) | `MOUTH_BLENDSHAPE_NAMES`                                             | Remove the offending blendshape name from the list entirely (it'll still come from the model, just won't be amplified). `mouthFunnel` and `mouthPucker` were already removed for exactly this reason. |
-| Mouth flickers/twitches when nobody is speaking                | `SILENCE_GATE_CHUNKS` / `SILENCE_PEAK_THRESHOLD` in `src/audio/wav2arkit/liveLipsync.ts` | Lower `SILENCE_GATE_CHUNKS` to gate to neutral faster, or raise `SILENCE_PEAK_THRESHOLD` if genuinely-quiet speech is being misclassified as silence. |
-| Mouth animation visibly starts a beat after the agent's voice, especially on short opening words | `CHUNK_MS` in `src/audio/wav2arkit/liveLipsync.ts`                    | Lower it. Latency scales with this (both the wait for the next capture tick and the inference call itself), at the cost of less acoustic context per model call — don't go far below 100ms without re-checking mouth quality, since the model may need close to a full syllable of audio to predict well. |
+| Symptom                                                                                             | Knob                                                                                     | How to adjust                                                                                                                                                                                                                                                                                                                                            |
+| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mouth barely moves / looks neutral even when the agent is clearly speaking                          | `MOUTH_GAIN`                                                                             | Raise it (was too low at 3, workable at 10). Small-signal response scales roughly linearly with this.                                                                                                                                                                                                                                                    |
+| Mouth opens too wide / looks exaggerated, "screaming", or unnatural                                 | `MOUTH_MAX`                                                                              | Lower it (0.4 as of this writing). This is a soft ceiling the curve approaches, not a hard clamp — see the curve formula in the code comment.                                                                                                                                                                                                            |
+| A _specific_ mouth shape looks wrong (blurry, distorted, combines badly with others) at high values | `MOUTH_SHAPE_CEILING_MULTIPLIER`                                                         | Add/adjust an entry for that blendshape name to scale its ceiling down (e.g. `0.6` = 60% of `MOUTH_MAX`) relative to the others, instead of lowering everything. `mouthLowerDownLeft/Right` already has one — a Gaussian-splat rendering artifact (soft lip tissue blurs when deformed far from its rest pose, more than the jaw's rigid rotation does). |
+| Odd combined shapes (e.g. lips pursing into an "O" while the jaw opens)                             | `MOUTH_BLENDSHAPE_NAMES`                                                                 | Remove the offending blendshape name from the list entirely (it'll still come from the model, just won't be amplified). `mouthFunnel` and `mouthPucker` were already removed for exactly this reason.                                                                                                                                                    |
+| Mouth flickers/twitches when nobody is speaking                                                     | `SILENCE_GATE_CHUNKS` / `SILENCE_PEAK_THRESHOLD` in `src/audio/wav2arkit/liveLipsync.ts` | Lower `SILENCE_GATE_CHUNKS` to gate to neutral faster, or raise `SILENCE_PEAK_THRESHOLD` if genuinely-quiet speech is being misclassified as silence.                                                                                                                                                                                                    |
+| Mouth animation visibly starts a beat after the agent's voice, especially on short opening words    | `CHUNK_MS` in `src/audio/wav2arkit/liveLipsync.ts`                                       | Lower it. Latency scales with this (both the wait for the next capture tick and the inference call itself), at the cost of less acoustic context per model call — don't go far below 100ms without re-checking mouth quality, since the model may need close to a full syllable of audio to predict well.                                                |
 
 After changing a constant:
+
 - If your host app aliases `gsplat-talkinghead` straight to `src/*.ts` (like `test-env`'s craco config does), just save — the dev server hot-reloads it.
 - Otherwise, rebuild the package (`cd gsplat-talkinghead && pnpm build`) before retesting in the host app.
 
@@ -126,13 +127,21 @@ Before bumping the version and publishing to npm, confirm all of the following:
 - [ ] `onSessionEnd` fires correctly via `sessionTimeout`
 - [ ] Custom `tools` are called by the agent as expected
 - [ ] Custom `backgroundImages` array cycles correctly (refresh a few times)
-- [ ] Omitting `avatar` and `assetsPath` loads the Jane preset from jsDelivr at `https://cdn.jsdelivr.net/npm/gsplat-talkinghead@<version>/assets/Jane.zip` — verify this URL 404s until the version is actually published (jsDelivr only mirrors published npm versions)
+- [ ] Omitting `avatar` and `assetsPath` loads the Jane preset from jsDelivr at `https://cdn.jsdelivr.net/gh/NavodPeiris/gsplat-talkinghead@main/gsplat-talkinghead/assets/Jane.zip` — the zips must be pushed to `main` on the public GitHub repo
 - [ ] Each of `avatar="Jack" | "Jane" | "John" | "Sasha"` loads its own bundle
 - [ ] `configureAvatarPresets({ baseUrl })` makes presets load from that base URL instead of jsDelivr
 - [ ] A custom `assetsPath` loads that bundle and overrides `avatar`
 - [ ] Unmounting the component (navigate away) produces no console errors
 - [ ] `package.json` `version` is bumped following semver
-- [ ] `npm pack --dry-run` includes all four `assets/<name>.zip` preset bundles in the tarball
+- [ ] `npm pack --dry-run` does NOT include `assets/` (presets load from GitHub via jsDelivr)
+- [ ] `main` on GitHub contains `gsplat-talkinghead/assets/<Name>.zip` for every preset
+- [ ] If previous Avatar zips changed, After pushing changed zips to `main`, purge jsDelivr's cache (it caches branch files for ~12 h), either by opening https://www.jsdelivr.com/tools/purge and pasting each zip's URL, or per file with:
+  ```sh
+  for name in Jack Jane John Sasha; do
+    curl -s "https://purge.jsdelivr.net/gh/NavodPeiris/gsplat-talkinghead@main/gsplat-talkinghead/assets/$name.zip"
+  done
+  ```
+  Then reload with the browser cache disabled and confirm the new bundle loads.
 
 ---
 
