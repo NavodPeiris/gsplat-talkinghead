@@ -1,10 +1,7 @@
+
 <div align="center">
 
-
-
-https://github.com/user-attachments/assets/670b67fe-e6f4-4bb6-a58e-66467fd7b977
-
-
+<img width="1130" height="643" alt="showcase" src="https://github.com/user-attachments/assets/e80706be-ea18-43bd-ba4f-9c691224b347" />
 
 <img alt="NPM Version" src="https://img.shields.io/npm/v/gsplat-talkinghead">
 <img alt="NPM Downloads" src="https://img.shields.io/npm/dy/gsplat-talkinghead">
@@ -15,6 +12,8 @@ https://github.com/user-attachments/assets/670b67fe-e6f4-4bb6-a58e-66467fd7b977
 Lip-Synced Gaussian-Splat avatar components for AI voice agents. Drop it into any React app, pick a provider, and hand it your credentials — everything else is handled internally. **No infrastructure provisioning — Gaussian-splat rendering and wav2arkit neural lipsync both run directly in the browser.**
 
 Supported providers: **OpenAI Realtime**, **OpenAI GPT-Live**, **Qwen Realtime (Alibaba Cloud)**, **ElevenLabs Conversational AI**, **Vapi**, **LiveKit Agents**.
+
+https://github.com/user-attachments/assets/670b67fe-e6f4-4bb6-a58e-66467fd7b977
 
 </div>
 
