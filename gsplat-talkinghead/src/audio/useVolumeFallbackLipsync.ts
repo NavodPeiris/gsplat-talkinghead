@@ -70,6 +70,7 @@ export function useVolumeFallbackLipsync({ getRemoteAudioLevel, active, controll
     return () => {
       cancelAnimationFrame(frameId);
       setStateIfChanged('Idle');
+      controllerRef.current?.updateBlendshapes(createNeutralWeights());
     };
   }, [getRemoteAudioLevel, active, controllerRef]);
 }

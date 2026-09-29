@@ -56,9 +56,9 @@ export const tools: OpenAIRealtimeTool[] = [
 // Tells the model when to use the set_emotion tool.
 const EMOTION_PROMPT = `
 # EMOTIONS
-Call the set_emotion tool when your feelings change: "happy" for good news or thanks,
-"excited" for great deals, "sad" when something is unavailable, "thinking" while you
-consider options, "neutral" otherwise. Don't mention the tool to the user.
+Call the set_emotion tool when your feelings change: "happy" for good news, thanks or
+great deals, "sad" when something is unavailable, "thinking" while you consider
+options, "neutral" otherwise. Don't mention the tool to the user.
 `;
 
 export default function OpenAIRealtimeTest() {
@@ -96,7 +96,6 @@ export default function OpenAIRealtimeTest() {
           });
           return session.value;
         }}
-        onSessionEnd={() => alert("Session ended")}
         sessionTimeout={2 * 60 * 1000}
       />
     </div>

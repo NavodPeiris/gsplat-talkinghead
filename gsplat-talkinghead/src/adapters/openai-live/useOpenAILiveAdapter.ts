@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DelayedAudioPlayback } from '../../audio/delayedAudioPlayback';
+import { LiveCostTracker } from '../../session/openaiCost';
 import type { SessionAdapter } from '../SessionAdapter';
 import type { OpenAIRealtimeTool, SessionStatus } from '../../types';
 
@@ -48,6 +49,7 @@ export function useOpenAILiveAdapter({ createSession, tools }: UseOpenAILiveAdap
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
+  const costRef = useRef(new LiveCostTracker());
   const toolsRef = useRef(tools);
   toolsRef.current = tools;
 
@@ -113,6 +115,7 @@ export function useOpenAILiveAdapter({ createSession, tools }: UseOpenAILiveAdap
   }, []);
 
   const cleanup = useCallback(() => {
+    costRef.current.logAndReset();
     flushTranscript('user');
     flushTranscript('assistant');
     micStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -160,6 +163,7 @@ export function useOpenAILiveAdapter({ createSession, tools }: UseOpenAILiveAdap
 
   const handleEvent = useCallback(
     (msg: LiveEvent) => {
+      costRef.current.handleEvent(msg);
       switch (msg.type) {
         case 'session.output_transcript.delta':
           if (typeof msg.delta === 'string') appendTranscript('assistant', msg.delta);

@@ -35,7 +35,6 @@ export default function QwenRealtimeTest() {
         instructions={sys_prompt}
         tools={tools}
         createSession={createSession}
-        onSessionEnd={() => alert("Session ended")}
         sessionTimeout={2 * 60 * 1000}
       />
     </div>

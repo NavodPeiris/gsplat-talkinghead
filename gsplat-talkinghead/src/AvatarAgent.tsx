@@ -31,8 +31,8 @@ export interface AvatarAgentProps {
 
   /**
    * Facial emotion layered on top of lipsync: `'neutral' | 'happy' | 'sad' |
-   * 'excited' | 'thinking'`. Changes blend in smoothly. Drive it from your
-   * app state, or let the model set it via `createEmotionTool`.
+   * 'thinking'`. Changes blend in smoothly. Drive it from your app state, or
+   * let the model set it via `createEmotionTool`.
    */
   emotion?: AvatarEmotion;
 
@@ -188,10 +188,21 @@ export function AvatarAgent({
   // frozen on the avatar's face indefinitely. Explicitly reset to neutral
   // whenever the session isn't connected (manual disconnect, timeout, or
   // end-phrase all funnel through `status` eventually going non-CONNECTED).
+  // When a session actually ends, also reset emotion and body/head motion;
+  // an `emotion` set after that still applies.
+  const wasActiveRef = useRef(false);
   useEffect(() => {
-    if (status !== 'CONNECTED') {
-      controllerRef.current?.updateBlendshapes(createNeutralWeights());
+    if (status === 'CONNECTED' || status === 'CONNECTING') {
+      wasActiveRef.current = true;
+      return;
     }
+    const controller = controllerRef.current;
+    if (wasActiveRef.current && controller?.resetAnimations) {
+      controller.resetAnimations();
+    } else {
+      controller?.updateBlendshapes(createNeutralWeights());
+    }
+    wasActiveRef.current = false;
   }, [status, controllerRef]);
 
   // ── End phrase detection via transcript ───────────────────────────────

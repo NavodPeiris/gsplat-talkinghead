@@ -75,7 +75,6 @@ export default function LiveKitAvatarTest() {
           )
         }
         backgroundImages={["/niceBG.jpg"]}
-        onSessionEnd={() => alert("Session ended")}
         sessionTimeout={2 * 60 * 1000}
       />
     </div>

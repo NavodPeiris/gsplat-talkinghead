@@ -17,8 +17,8 @@ interface BaseAvatarAgentProps {
 
   /**
    * Facial emotion layered on top of lipsync: `'neutral' | 'happy' | 'sad' |
-   * 'excited' | 'thinking'`. Changes blend in smoothly. Drive it from your
-   * app state, or let the model set it via `createEmotionTool`.
+   * 'thinking'`. Changes blend in smoothly. Drive it from your app state, or
+   * let the model set it via `createEmotionTool`.
    */
   emotion?: AvatarEmotion;
 

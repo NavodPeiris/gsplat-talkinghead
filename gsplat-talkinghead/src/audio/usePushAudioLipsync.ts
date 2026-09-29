@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { RefObject } from 'react';
 import { Wav2ArkitLipsync } from './wav2arkit/liveLipsync';
 import type { IAvatarController } from '../avatar/GaussianAvatarController';
+import { createNeutralWeights } from '../constants/arkit';
 
 const IDLE_AFTER_MS = 400;
 
@@ -40,6 +41,8 @@ export function usePushAudioLipsync({ subscribeToRemoteAudio, controllerRef }: U
       if (idleTimer) clearTimeout(idleTimer);
       unsubscribe();
       lipsync.stop();
+      // Clear the last pushed frame so the mouth doesn't stay open.
+      controllerRef.current?.updateBlendshapes(createNeutralWeights());
       controllerRef.current?.setChatState('Idle');
     };
   }, [subscribeToRemoteAudio, controllerRef]);

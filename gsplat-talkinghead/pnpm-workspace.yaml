@@ -1,5 +1,4 @@
 # Dependencies allowed to run install scripts (pnpm blocks them by default).
 allowBuilds:
-  core-js: false # script only prints a funding banner
-  core-js-pure: false # script only prints a funding banner
+  esbuild: true # tsup's bundler; the script sets up its native binary
   protobufjs: false # script only prints a version notice

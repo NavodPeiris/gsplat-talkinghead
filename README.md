@@ -8,7 +8,7 @@
 
 Lip-Synced Gaussian-Splat avatar components for AI voice agents. Drop it into any React app, pick a provider, and hand it your credentials — everything else is handled internally. **No infrastructure provisioning — Gaussian-splat rendering and wav2arkit neural lipsync both run directly in the browser.**
 
-Supported providers: **OpenAI Realtime API**, **ElevenLabs Conversational AI Agents**, **Vapi Agents**, **LiveKit Agents**. **Qwen Realtime (Alibaba Cloud)**
+Supported providers: **OpenAI Realtime**, **OpenAI GPT-Live**, **Qwen Realtime (Alibaba Cloud)**, **ElevenLabs Conversational AI**, **Vapi**, **LiveKit Agents**.
 
 </div>
 
@@ -148,7 +148,7 @@ const tools: OpenAIRealtimeTool[] = [
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY, // server-only secret
 });
 
 const sys_prompt = `
@@ -185,14 +185,18 @@ export async function GET() {
 
 ### Props
 
-| Prop              | Type                        | Default      | Description                                                                                     |
-| ----------------- | --------------------------- | ------------ | ----------------------------------------------------------------------------------------------- |
-| `systemPrompt`    | `string`                    | **required** | Instructions injected into the realtime agent on connect.                                       |
-| `getEphemeralKey` | `() => Promise<string>`     | **required** | Called once per connection. Must resolve to an OpenAI ephemeral key.                            |
-| `tools`           | `ReturnType<typeof tool>[]` | `[]`         | Tools the agent can call. Use the `tool()` helper from `@openai/agents/realtime`.               |
-| `agentVoice`      | `string`                    | `"sage"`     | OpenAI Realtime voice. Options: `alloy` `ash` `ballad` `coral` `echo` `sage` `shimmer` `verse`. |
+| Prop              | Type                    | Default      | Description                                                                                          |
+| ----------------- | ----------------------- | ------------ | ---------------------------------------------------------------------------------------------------- |
+| `getEphemeralKey` | `() => Promise<string>` | **required** | Called once per connection. Must resolve to an OpenAI ephemeral key from your backend.               |
+| `tools`           | `OpenAIRealtimeTool[]`  | `[]`         | Browser-side function tools: `name`, `description`, JSON-schema `parameters`, and a `handler`.       |
+| `agentVoice`      | `string`                | `"sage"`     | OpenAI Realtime voice, e.g. `alloy` `ash` `ballad` `coral` `echo` `sage` `shimmer` `verse`.          |
+
+The model and system prompt (`instructions`) are set by your backend when it
+mints the ephemeral key, as in the example above.
 
 Runs full wav2arkit neural lipsync — OpenAI's WebRTC session exposes a real remote `MediaStream`.
+When a session ends, an estimated total cost is logged to the console, from the
+per-response token usage OpenAI reports (plus input transcription).
 
 ---
 
@@ -258,6 +262,8 @@ so they're configured on the backend rather than as component props.
 
 Runs full wav2arkit neural lipsync — agent audio arrives as a WebRTC media track.
 Unlike `OpenAIRealtimeAgent`, it doesn't send an opening prompt on connect, so the user may need to speak first.
+When a session ends, the voice cost ($0.05/min of billed time) is logged to the
+console; the delegated backend model is billed separately at its own rates.
 
 ---
 
@@ -469,6 +475,7 @@ All provider components accept these additional props:
 | ------------------ | -------------- | ------------------- | -------------------------------------------------------------------------------------------------- |
 | `avatar`           | `AvatarPreset` | `"Jane"`            | Built-in avatar: `"Jack"`, `"Jane"`, `"John"` or `"Sasha"`. See [Avatars](#avatars) below.         |
 | `assetsPath`       | `string`       | —                   | URL/path to a custom Gaussian-splat avatar asset bundle. Takes precedence over `avatar`.           |
+| `emotion`          | `AvatarEmotion`| `"neutral"`         | Facial emotion over lipsync: `"neutral"`, `"happy"`, `"sad"` or `"thinking"`. See [Emotions](#emotions). |
 | `backgroundImages` | `string[]`     | `[]`                | Image URLs for the background. One is chosen at random each mount. Transparent when omitted.       |
 | `onSessionEnd`     | `() => void`   | —                   | Called when the session ends (end phrase detected, timeout, or user clicked End).                  |
 | `endSessionPhrase` | `string`       | `"this is the end"` | Case-insensitive substring the component watches for in the agent's transcript to end the session. |
@@ -529,8 +536,8 @@ and pass its URL as `assetsPath`:
 
 ## Emotions
 
-Every component takes an `emotion` prop — `"neutral"`, `"happy"`, `"sad"`,
-`"excited"` or `"thinking"` — layered on top of lipsync as ARKit blendshape
+Every component takes an `emotion` prop — `"neutral"`, `"happy"`, `"sad"` or
+`"thinking"` — layered on top of lipsync as ARKit blendshape
 offsets (smile, brows, eye squint/gaze), so the avatar can smile while it
 talks. Changes blend in over ~0.3 s.
 
@@ -609,19 +616,27 @@ platform without a real audio stream.
 ## How it works
 
 ```
+Component mounts
+      │
+      ├── Avatar bundle + wav2arkit model download ──► "Downloading assets" overlay, Start disabled
+      │
 User clicks Start
       │
       ▼
 Provider adapter connects (WebRTC / WebSocket)
       │
-      ├── Audio ──► resample to 16kHz ──► wav2arkit (onnxruntime-web) ──► ARKit blendshapes ──► Gaussian-splat renderer
-      │             (MediaStream tap, or pushed raw PCM — see Advanced: adapter hooks)
+      ├── Audio ──► resample to 16kHz ──► wav2arkit (onnxruntime-web) ──► ARKit blendshapes ─┐
+      │             (MediaStream tap, or pushed raw PCM — see Advanced: adapter hooks)          │
+      │                                                                                         ▼
+      │   emotion prop ──► blendshape offsets ──► blink + subtle head sway ──► Gaussian-splat renderer
       │
       ├── Transcript ──► endSessionPhrase check ──► onSessionEnd(), End
       │
-      ├── User clicks end ──► End
-      |
+      ├── User clicks End ──► End
+      │
       └── sessionTimeout ──► onSessionEnd(), End
+
+End ──► face, emotion and head motion reset to rest (OpenAI agents also log the session cost)
 ```
 
 The wav2arkit ONNX model
@@ -635,35 +650,45 @@ required.
 
 ```
 src/
-├── index.ts                    ← public exports
-├── types.ts                    ← shared prop types
+├── index.ts                     ← public exports (AvatarAgent, presets, emotions, types)
+├── openai.ts · qwen.ts · vapi.ts · elevenlabs.ts · livekit.ts   ← per-provider entry points
+├── types.ts                     ← shared prop types
 ├── AvatarAgent.tsx              ← platform-agnostic core component
-├── OpenAIRealtimeAgent.tsx       ← provider convenience wrappers
+├── OpenAIRealtimeAgent.tsx      ← provider convenience wrappers
+├── OpenAILiveAgent.tsx
+├── QwenRealtimeAgent.tsx
 ├── ElevenLabsAvatarAgent.tsx
 ├── VapiAvatarAgent.tsx
 ├── LiveKitAvatarAgent.tsx
-├── avatar/
-│   ├── GaussianAvatarController.ts   ← wraps @myned-ai/gsplat-flame-avatar-renderer
-│   ├── LazyAvatarController.ts       ← lazy-loads the renderer + lipsync engine
-│   └── AvatarContainer.tsx           ← React mount point + background image
-├── constants/
-│   └── arkit.ts                 ← ARKit blendshape names, neutral pose
 ├── adapters/
 │   ├── SessionAdapter.ts        ← adapter interface
-│   ├── openai/
-│   ├── elevenlabs/
-│   ├── vapi/
-│   └── livekit/
+│   ├── openai-realtime/ · openai-live/ · qwen/
+│   └── elevenlabs/ · vapi/ · livekit/
+├── avatar/
+│   ├── GaussianAvatarController.ts  ← wraps the renderer: blendshapes, blink, emotion, head sway
+│   ├── LazyAvatarController.ts      ← lazy-loads the renderer
+│   ├── AvatarContainer.tsx          ← mount point + background image
+│   ├── presets.ts                   ← built-in avatars (Jack, Jane, John, Sasha)
+│   ├── emotions.ts                  ← emotion blendshapes + set_emotion tool
+│   └── transparentCanvas.ts         ← transparent WebGL canvas over the background
+├── session/
+│   ├── useAgentSession.ts       ← OpenAI Realtime WebRTC session
+│   ├── openaiCost.ts            ← end-of-session cost logging
+│   └── codecUtils.ts
+├── ui/                          ← Toolbar, StatusBadge, AssetsLoader, AudioBars
+├── constants/
+│   └── arkit.ts                 ← ARKit blendshape names, neutral pose
 └── audio/
     ├── wav2arkit/
-    │   ├── modelLoader.ts        ← fetches + caches the ONNX model
-    │   ├── resample.ts           ← resamples audio to 16kHz
-    │   ├── inferenceEngine.ts    ← onnxruntime-web session
-    │   └── liveLipsync.ts        ← streaming/paced inference pipeline
-    ├── useAvatarLipsync.ts       ← wires a MediaStream into wav2arkit
-    ├── usePushAudioLipsync.ts    ← wires pushed raw PCM into wav2arkit
+    │   ├── modelLoader.ts       ← fetches + caches the ONNX model
+    │   ├── resample.ts          ← resamples audio to 16kHz
+    │   ├── inferenceEngine.ts   ← onnxruntime-web session + load progress
+    │   └── liveLipsync.ts       ← streaming/paced inference pipeline
+    ├── useAvatarLipsync.ts      ← wires a MediaStream into wav2arkit
+    ├── usePushAudioLipsync.ts   ← wires pushed raw PCM into wav2arkit
     ├── useVolumeFallbackLipsync.ts ← coarse fallback for stream-less adapters
-    └── useAudio.ts               ← mic monitoring
+    ├── delayedAudioPlayback.ts  ← delays audio to line up with lipsync
+    └── useAudio.ts              ← mic monitoring
 ```
 
 ---

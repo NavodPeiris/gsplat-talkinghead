@@ -223,6 +223,13 @@ export class LazyAvatarController implements IAvatarController, Disposable {
     return this._avatar ? this._avatar.getChatState() : this._pendingState;
   }
 
+  public resetAnimations(): void {
+    this._pendingState = 'Idle';
+    this._pendingBlendshapes = null;
+    this._pendingEmotion = null;
+    this._avatar?.resetAnimations?.();
+  }
+
   public setEmotion(emotion: AvatarEmotion, intensity?: number): void {
     this._pendingEmotion = { emotion, intensity };
     this._avatar?.setEmotion?.(emotion, intensity);

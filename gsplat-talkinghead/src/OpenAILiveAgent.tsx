@@ -35,7 +35,7 @@ import type { OpenAILiveAgentProps } from './types';
  *
  * @param avatar - Built-in avatar: `'Jack' | 'Jane' | 'John' | 'Sasha'`. Defaults to `'Jane'`.
  *
- * @param emotion - Facial emotion over lipsync: `'neutral' | 'happy' | 'sad' | 'excited' | 'thinking'`.
+ * @param emotion - Facial emotion over lipsync: `'neutral' | 'happy' | 'sad' | 'thinking'`.
  *
  * @param assetsPath - URL/path to a custom Gaussian-splat avatar asset bundle. Takes precedence over `avatar`.
  *

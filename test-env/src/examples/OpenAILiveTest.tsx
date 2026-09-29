@@ -35,7 +35,6 @@ export default function OpenAILiveTest() {
         backgroundImages={["/niceBG.jpg"]}
         tools={tools}
         createSession={createLiveSession}
-        onSessionEnd={() => alert("Session ended")}
         sessionTimeout={2 * 60 * 1000}
       />
     </div>

@@ -9,7 +9,7 @@ import QwenRealtimeTest from './examples/QwenRealtimeTest';
 function App() {
   return (
     <div className='flex'>
-      <QwenRealtimeTest />
+      <OpenAIRealtimeTest />
     </div>
   );
 }

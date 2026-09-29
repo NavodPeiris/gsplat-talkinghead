@@ -63,6 +63,8 @@ export interface IAvatarController {
   resume?(): void;
   /** Blend the face toward an emotion (0–1 intensity), on top of lipsync. */
   setEmotion?(emotion: AvatarEmotion, intensity?: number): void;
+  /** Return every animation to rest: neutral mouth, neutral emotion, idle body/head. */
+  resetAnimations?(): void;
 }
 
 /**
@@ -235,6 +237,13 @@ export class GaussianAvatarController implements IAvatarController, Disposable {
 
   public setChatState(state: ChatState): void {
     this.curState = state;
+  }
+
+  public resetAnimations(): void {
+    // Neutral face now; emotion and head sway ease out on their own from here.
+    this.liveBlendshapeData = null;
+    this.emotionTarget = {};
+    this.curState = 'Idle';
   }
 
   public setEmotion(emotion: AvatarEmotion, intensity = 1): void {

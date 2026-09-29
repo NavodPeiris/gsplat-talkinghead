@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 import { Wav2ArkitLipsync } from './wav2arkit/liveLipsync';
 import { AgentLevelMeter, setActiveAgentLevelMeter } from './wav2arkit/agentLevelMeter';
 import type { IAvatarController } from '../avatar/GaussianAvatarController';
+import { createNeutralWeights } from '../constants/arkit';
 
 interface UseAvatarLipsyncOptions {
   /** The remote agent audio stream. When this transitions from null to a stream,
@@ -43,6 +44,10 @@ export function useAvatarLipsync({ remoteStream, controllerRef, onStartRecording
       levelMeter.stop();
       setActiveAgentLevelMeter(null);
       onStopRecording?.();
+      // Only now can no more lipsync frames arrive — clear the last spoken
+      // frame (often a half-open mouth) so it doesn't stay frozen on the face.
+      controllerRef.current?.updateBlendshapes(createNeutralWeights());
+      controllerRef.current?.setChatState('Idle');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteStream]); // re-runs when the stream reference changes (null → stream → null)
