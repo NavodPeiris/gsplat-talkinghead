@@ -29,9 +29,8 @@ export default function QwenRealtimeTest() {
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <QwenRealtimeAgent
-        avatar="Jane"
-        voice="Jennifer"
-        backgroundImages={["/niceBG.jpg"]}
+        avatar="John"
+        voice="Aiden"
         instructions={sys_prompt}
         tools={tools}
         createSession={createSession}
