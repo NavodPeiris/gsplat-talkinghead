@@ -1,7 +1,7 @@
 {
   "name": "gsplat-talkinghead",
   "version": "0.1.0",
-  "description": "Zero-Infrastructure Lip-Synced Gaussian-Splat avatar components for AI voice agents. Built with onnxruntime-web and AI providers.",
+  "description": "LAM Gaussian-Splat Avatars for AI voice agents. Realistic avatars for interview/support/sales agents.",
   
   "author": "Navod Peiris",
   "license": "MIT",
