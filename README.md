@@ -195,8 +195,6 @@ The model and system prompt (`instructions`) are set by your backend when it
 mints the ephemeral key, as in the example above.
 
 Runs full wav2arkit neural lipsync — OpenAI's WebRTC session exposes a real remote `MediaStream`.
-When a session ends, an estimated total cost is logged to the console, from the
-per-response token usage OpenAI reports (plus input transcription).
 
 ---
 
@@ -262,8 +260,6 @@ so they're configured on the backend rather than as component props.
 
 Runs full wav2arkit neural lipsync — agent audio arrives as a WebRTC media track.
 Unlike `OpenAIRealtimeAgent`, it doesn't send an opening prompt on connect, so the user may need to speak first.
-When a session ends, the voice cost ($0.05/min of billed time) is logged to the
-console; the delegated backend model is billed separately at its own rates.
 
 ---
 
@@ -636,7 +632,7 @@ Provider adapter connects (WebRTC / WebSocket)
       │
       └── sessionTimeout ──► onSessionEnd(), End
 
-End ──► face, emotion and head motion reset to rest (OpenAI agents also log the session cost)
+End ──► face, emotion and head motion reset to rest
 ```
 
 The wav2arkit ONNX model
@@ -673,7 +669,6 @@ src/
 │   └── transparentCanvas.ts         ← transparent WebGL canvas over the background
 ├── session/
 │   ├── useAgentSession.ts       ← OpenAI Realtime WebRTC session
-│   ├── openaiCost.ts            ← end-of-session cost logging
 │   └── codecUtils.ts
 ├── ui/                          ← Toolbar, StatusBadge, AssetsLoader, AudioBars
 ├── constants/

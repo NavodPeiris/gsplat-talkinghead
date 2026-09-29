@@ -6,7 +6,6 @@
  */
 import { useCallback, useRef, useState } from 'react';
 import { audioFormatForCodec, applyCodecPreferences } from './codecUtils';
-import { RealtimeCostTracker } from './openaiCost';
 import type { SessionStatus, OpenAIRealtimeTool } from '../types';
 
 const CALLS_URL = 'https://api.openai.com/v1/realtime/calls';
@@ -32,7 +31,6 @@ export function useAgentSession({
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
-  const costRef = useRef(new RealtimeCostTracker());
 
   const codecParamRef = useRef<string>(
     typeof window !== 'undefined'
@@ -49,7 +47,6 @@ export function useAgentSession({
   );
 
   const cleanup = useCallback(() => {
-    costRef.current.logAndReset();
     micStreamRef.current?.getTracks().forEach((t) => t.stop());
     micStreamRef.current = null;
     dcRef.current = null;
@@ -72,12 +69,6 @@ export function useAgentSession({
 
         const pc = new RTCPeerConnection();
         const dc = pc.createDataChannel('oai-events');
-        // Listens from the start so session.created (which carries the model) is seen.
-        dc.addEventListener('message', (event) => {
-          try {
-            costRef.current.handleEvent(JSON.parse(event.data as string));
-          } catch { /* ignore parse errors */ }
-        });
 
         pc.ontrack = (event) => {
           if (audioElement && event.streams[0]) {
