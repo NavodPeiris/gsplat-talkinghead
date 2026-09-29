@@ -1,5 +1,11 @@
 <div align="center">
 
+
+
+https://github.com/user-attachments/assets/670b67fe-e6f4-4bb6-a58e-66467fd7b977
+
+
+
 <img alt="NPM Version" src="https://img.shields.io/npm/v/gsplat-talkinghead">
 <img alt="NPM Downloads" src="https://img.shields.io/npm/dy/gsplat-talkinghead">
 <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/NavodPeiris/gsplat-talkinghead">
